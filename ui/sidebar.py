@@ -26,7 +26,6 @@ class Sidebar(ctk.CTkFrame):
         self._build()
 
     def _build(self):
-        # Logo
         logo_frame = ctk.CTkFrame(self, fg_color="transparent")
         logo_frame.pack(fill="x", pady=(16, 8))
         ctk.CTkLabel(
@@ -42,7 +41,6 @@ class Sidebar(ctk.CTkFrame):
 
         ctk.CTkFrame(self, fg_color=COLORS["border"], height=1).pack(fill="x", pady=8)
 
-        # Nav buttons
         nav_frame = ctk.CTkFrame(self, fg_color="transparent")
         nav_frame.pack(fill="x", padx=8)
 
@@ -62,10 +60,8 @@ class Sidebar(ctk.CTkFrame):
             btn.pack(fill="x", pady=2)
             self._buttons[key] = btn
 
-        # Spacer
         ctk.CTkFrame(self, fg_color="transparent").pack(fill="both", expand=True)
 
-        # Pro badge
         self._pro_badge = ctk.CTkFrame(self, fg_color=COLORS["accent_muted"],
                                         corner_radius=8)
         self._pro_badge.pack(fill="x", padx=12, pady=8)
@@ -81,9 +77,12 @@ class Sidebar(ctk.CTkFrame):
             font=FONT_CAPTION, text_color=COLORS["text_muted"]
         ).pack(pady=(0, 12))
 
-        self._select("scan")
+        # Initial highlight — do NOT call _select here to avoid triggering
+        # navigate() before App._views is populated.
+        self._apply_highlight("scan")
 
-    def _select(self, key: str):
+    def _apply_highlight(self, key: str):
+        """Update button styles only, no navigation side-effect."""
         self._active = key
         for k, btn in self._buttons.items():
             if k == key:
@@ -98,10 +97,16 @@ class Sidebar(ctk.CTkFrame):
                     text_color=COLORS["text_secondary"],
                     font=FONT_BODY
                 )
+
+    def _select(self, key: str):
+        """User clicked a nav button: update highlight AND trigger navigation."""
+        self._apply_highlight(key)
         self._on_navigate(key)
 
     def set_active(self, key: str):
-        self._select(key)
+        """Called by App.navigate() to sync the sidebar highlight.
+        Must NOT call _on_navigate — that would recurse infinitely."""
+        self._apply_highlight(key)
 
     def refresh_pro_badge(self):
         for w in self._pro_badge.winfo_children():
