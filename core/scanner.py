@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from core.hasher import partial_hash, full_hash
 from core.image_similarity import is_image, group_similar_images
 from db.models import FileInfo, DuplicateGroup, ScanOptions
-from utils.constants import IMAGE_EXTENSIONS, SCAN_BATCH_SIZE
+from utils.constants import IMAGE_EXTENSIONS, SCAN_BATCH_SIZE, SCAN_FREE_LIMIT_GB
 from utils.file_utils import walk_files
 
 try:
@@ -89,6 +89,18 @@ class DuplicateScanner:
                 extensions=extensions,
                 exclude_folders=exclude,
             )
+
+            # Free tier: cap total data scanned at SCAN_FREE_LIMIT_GB
+            from core.license import is_pro as _is_pro
+            if not _is_pro():
+                limit = SCAN_FREE_LIMIT_GB * 1024 ** 3
+                cumulative, capped = 0, []
+                for _path, _size in all_files:
+                    cumulative += _size
+                    if cumulative > limit:
+                        break
+                    capped.append((_path, _size))
+                all_files = capped
 
             total = len(all_files)
             errors = []

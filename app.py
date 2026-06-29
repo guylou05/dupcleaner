@@ -92,6 +92,16 @@ class App(ctk.CTk):
     def show_results(self, groups: list, scan_history_id: int = None):
         import json
         from datetime import datetime
+        from core.license import is_pro
+        from utils.constants import FREE_RESULTS_LIMIT
+
+        # Free tier: only show top N groups; pass full count for the upgrade banner
+        full_count = len(groups)
+        if not is_pro() and full_count > FREE_RESULTS_LIMIT:
+            groups = groups[:FREE_RESULTS_LIMIT]
+            capped_count = full_count
+        else:
+            capped_count = 0  # 0 = no cap applied
 
         if scan_history_id and groups:
             try:
@@ -127,7 +137,7 @@ class App(ctk.CTk):
                 pass
 
         results_view: ResultsView = self._views["results"]
-        results_view.load_results(groups, scan_history_id)
+        results_view.load_results(groups, scan_history_id, capped_count=capped_count)
         self.navigate("results")
 
     def _show_first_run_if_needed(self):

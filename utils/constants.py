@@ -28,4 +28,5 @@ DEFAULT_EXCLUDE_FOLDERS = [
     "C:\\Program Files (x86)",
 ]
 
-SCAN_FREE_LIMIT_GB = 10  # free tier scan cap
+SCAN_FREE_LIMIT_GB    = 1   # free tier: cap total scanned data at 1 GB
+FREE_RESULTS_LIMIT    = 10  # free tier: show only the top 10 duplicate groups

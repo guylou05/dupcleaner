@@ -25,6 +25,7 @@ class ResultsView(ctk.CTkFrame):
         self._groups = []
         self._filtered = []
         self._scan_history_id = None
+        self._capped_count = 0
         self._build()
 
     def _build(self):
@@ -120,9 +121,10 @@ class ResultsView(ctk.CTkFrame):
         )
         self._empty_label.pack(pady=60)
 
-    def load_results(self, groups: list, scan_history_id: int = None):
+    def load_results(self, groups: list, scan_history_id: int = None, capped_count: int = 0):
         self._groups = groups
         self._scan_history_id = scan_history_id
+        self._capped_count = capped_count  # total groups before free-tier cap (0 = uncapped)
         self._apply_sort()
 
     def _apply_sort(self):
@@ -179,6 +181,34 @@ class ResultsView(ctk.CTkFrame):
 
         for idx, group in enumerate(self._filtered):
             self._render_group_card(idx, group)
+
+        # Free-tier cap banner
+        if self._capped_count > 0:
+            banner = ctk.CTkFrame(
+                self._scroll,
+                fg_color=COLORS["accent_muted"],
+                corner_radius=8,
+                border_color=COLORS["accent"],
+                border_width=1,
+            )
+            banner.pack(fill="x", pady=(8, 4))
+            ctk.CTkLabel(
+                banner,
+                text=f"⭐  Showing {len(self._filtered)} of {self._capped_count} duplicate groups."
+                     f"  Upgrade to Pro to see all results, export reports, and remove limits.",
+                font=FONT_CAPTION,
+                text_color=COLORS["text_primary"],
+                wraplength=600,
+                justify="left",
+            ).pack(side="left", padx=16, pady=10)
+            ctk.CTkButton(
+                banner, text="Upgrade — $24.99 lifetime",
+                font=FONT_CAPTION,
+                height=28,
+                fg_color=COLORS["accent"],
+                hover_color=COLORS["accent_hover"],
+                command=lambda: __import__("webbrowser").open("https://dupeclearpro.com/upgrade"),
+            ).pack(side="right", padx=12, pady=10)
 
     def _render_group_card(self, idx: int, group):
         total_wasted = format_size(group.wasted_bytes)
@@ -396,6 +426,10 @@ class ResultsView(ctk.CTkFrame):
         self._do_delete(files, permanent=True, modal=modal)
 
     def _export(self):
+        from core.license import is_pro
+        if not is_pro():
+            show_toast(self, "Export requires Pro. Upgrade at dupeclearpro.com.", "warning")
+            return
         if not self._groups:
             show_toast(self, "Nothing to export.", "warning")
             return
