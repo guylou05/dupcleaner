@@ -90,15 +90,17 @@ class DuplicateScanner:
                 exclude_folders=exclude,
             )
 
-            # Free tier: cap total data scanned at SCAN_FREE_LIMIT_GB
+            # Free tier: cap total data scanned at SCAN_FREE_LIMIT_GB.
+            # Skip (don't stop on) oversized files so one large file early in
+            # the walk order can't knock out every file that follows it.
             from core.license import is_pro as _is_pro
             if not _is_pro():
                 limit = SCAN_FREE_LIMIT_GB * 1024 ** 3
                 cumulative, capped = 0, []
                 for _path, _size in all_files:
+                    if cumulative + _size > limit:
+                        continue
                     cumulative += _size
-                    if cumulative > limit:
-                        break
                     capped.append((_path, _size))
                 all_files = capped
 
