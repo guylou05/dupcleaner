@@ -31,12 +31,8 @@ class App(ctk.CTk):
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
         self.configure(fg_color=COLORS["bg_primary"])
-        # Remove default titlebar on Windows for custom titlebar feel
-        # Note: overrideredirect breaks minimize/maximize on some setups,
-        # so we keep the OS frame but style the content area instead.
 
     def _build_titlebar(self):
-        # Custom top bar (decorative, inside window)
         bar = ctk.CTkFrame(self, fg_color=COLORS["sidebar_bg"],
                             height=TITLEBAR_HEIGHT, corner_radius=0)
         bar.pack(fill="x", side="top")
@@ -57,6 +53,8 @@ class App(ctk.CTk):
         container = ctk.CTkFrame(self, fg_color=COLORS["bg_primary"], corner_radius=0)
         container.pack(fill="both", expand=True)
 
+        # Sidebar is created first; it calls navigate("scan") during __init__.
+        # _views is not set yet at that point, so navigate() guards with hasattr.
         self.sidebar = Sidebar(container, on_navigate=self.navigate)
         self.sidebar.pack(side="left", fill="y")
 
@@ -64,7 +62,6 @@ class App(ctk.CTk):
                                       corner_radius=0)
         self._content.pack(side="left", fill="both", expand=True)
 
-        # Instantiate all views (hidden until navigated to)
         self._views = {
             "scan":      ScanView(self._content, self),
             "results":   ResultsView(self._content, self),
@@ -74,31 +71,28 @@ class App(ctk.CTk):
             "settings":  SettingsView(self._content, self),
         }
         self._active_view: str | None = None
+        # Now that _views exists, do the initial navigation.
         self.navigate("scan")
 
     def navigate(self, key: str):
-        if key not in self._views:
+        if not hasattr(self, '_views') or key not in self._views:
             return
         if self._active_view:
             self._views[self._active_view].pack_forget()
         self._active_view = key
         view = self._views[key]
         view.pack(fill="both", expand=True)
-        # Refresh views that need live data
         if key == "history" and hasattr(view, "refresh"):
             view.refresh()
         if key == "trash" and hasattr(view, "refresh"):
             view.refresh()
-        # Keep sidebar in sync when navigate is called programmatically
         if hasattr(self, "sidebar"):
             self.sidebar.set_active(key)
 
     def show_results(self, groups: list, scan_history_id: int = None):
-        """Called by scan view (and history view) to display results."""
         import json
         from datetime import datetime
 
-        # Persist results in scan history
         if scan_history_id and groups:
             try:
                 def _fi_dict(fi):
