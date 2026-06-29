@@ -71,12 +71,23 @@ def validate_license(key: str) -> bool:
 
 
 def is_pro() -> bool:
-    return validate_license(get_setting("license_key", ""))
+    from core.machine_id import get_machine_id
+    key = get_setting("license_key", "")
+    if not validate_license(key):
+        return False
+    stored_mid = get_setting("license_machine_id", "")
+    # If no machine ID was stored yet (pre-binding upgrade), bind now
+    if not stored_mid:
+        set_setting("license_machine_id", get_machine_id())
+        return True
+    return hmac.compare_digest(stored_mid, get_machine_id())
 
 
 def activate_license(key: str) -> bool:
+    from core.machine_id import get_machine_id
     if validate_license(key):
         set_setting("license_key", key.upper().strip())
+        set_setting("license_machine_id", get_machine_id())
         set_setting("license_status", "pro")
         return True
     return False
@@ -84,6 +95,7 @@ def activate_license(key: str) -> bool:
 
 def deactivate_license():
     set_setting("license_key", "")
+    set_setting("license_machine_id", "")
     set_setting("license_status", "free")
 
 
