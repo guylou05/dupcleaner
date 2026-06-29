@@ -1,0 +1,102 @@
+name: Build DupeClear Pro
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create placeholder icon
+        shell: python
+        run: |
+          import os, struct, zlib
+          os.makedirs('assets', exist_ok=True)
+          # Minimal valid 16x16 ICO so PyInstaller doesn't error
+          ico_header = struct.pack('<HHH', 0, 1, 1)
+          ico_entry  = struct.pack('<BBBBHHII', 16, 16, 0, 0, 1, 32, 40+16*16*4, 22)
+          bmp_header = struct.pack('<IiiHHIIiiII', 40, 16, -16, 1, 32, 0, 0, 0, 0, 0, 0)
+          pixels = b'\x10\x4f\xf7\xff' * (16*16)
+          with open('assets/icon.ico', 'wb') as f:
+              f.write(ico_header + ico_entry + bmp_header + pixels)
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller `
+            --onefile `
+            --windowed `
+            --icon=assets/icon.ico `
+            --name=DupeClearPro `
+            "--add-data=assets;assets" `
+            --hidden-import=customtkinter `
+            --hidden-import=PIL._tkinter_finder `
+            --hidden-import=xxhash `
+            --hidden-import=imagehash `
+            --hidden-import=darkdetect `
+            --hidden-import=schedule `
+            --collect-all=customtkinter `
+            --collect-all=darkdetect `
+            main.py
+
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: DupeClearPro-Windows-x64
+          path: dist/DupeClearPro.exe
+          retention-days: 30
+
+  build-linux:
+    name: Linux Binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps
+        run: sudo apt-get install -y xvfb libglib2.0-0 libgl1
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create placeholder assets
+        run: mkdir -p assets && touch assets/icon.ico
+
+      - name: Build with PyInstaller
+        run: |
+          xvfb-run -a pyinstaller \
+            --onefile \
+            --name=DupeClearPro \
+            --add-data="assets:assets" \
+            --hidden-import=customtkinter \
+            --hidden-import=PIL._tkinter_finder \
+            --hidden-import=xxhash \
+            --hidden-import=imagehash \
+            --hidden-import=darkdetect \
+            --hidden-import=schedule \
+            --collect-all=customtkinter \
+            --collect-all=darkdetect \
+            main.py
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: DupeClearPro-Linux-x64
+          path: dist/DupeClearPro
+          retention-days: 30
