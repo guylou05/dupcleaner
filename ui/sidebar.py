@@ -26,18 +26,8 @@ class Sidebar(ctk.CTkFrame):
         self._build()
 
     def _build(self):
-        logo_frame = ctk.CTkFrame(self, fg_color="transparent")
-        logo_frame.pack(fill="x", pady=(16, 8))
-        ctk.CTkLabel(
-            logo_frame, text="\U0001f9f9 DupeClear Pro",
-            font=("Segoe UI", 15, "bold"),
-            text_color=COLORS["accent"]
-        ).pack(padx=16, anchor="w")
-
-        ctk.CTkFrame(self, fg_color=COLORS["border"], height=1).pack(fill="x", pady=8)
-
         nav_frame = ctk.CTkFrame(self, fg_color="transparent")
-        nav_frame.pack(fill="x", padx=8)
+        nav_frame.pack(fill="x", padx=8, pady=(16, 0))
 
         for key, icon, label in NAV_ITEMS:
             btn = ctk.CTkButton(
