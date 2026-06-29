@@ -161,7 +161,7 @@ class SettingsView(ctk.CTkFrame):
         # About
         about = self._section(scroll, "About")
         ctk.CTkLabel(about,
-                     text=f"{APP_NAME} v{APP_VERSION}\nBuilt with Python + CustomTkinter",
+                     text=f"{APP_NAME} v{APP_VERSION}\nSupport: support@esupplytech.com",
                      font=FONT_CAPTION, text_color=COLORS["text_muted"], justify="left"
                      ).pack(anchor="w", padx=16, pady=12)
 
@@ -215,8 +215,20 @@ class SettingsView(ctk.CTkFrame):
             set_setting("bin_path", path)
 
     def _apply_theme(self, value: str):
-        import customtkinter as ctk
-        ctk.set_appearance_mode(value.lower())
+        from utils.theme import set_theme
+        mode = value.lower()
+        if mode == "system":
+            try:
+                import darkdetect
+                mode = (darkdetect.theme() or "dark").lower()
+            except Exception:
+                mode = "dark"
+        set_theme(mode)
+        # Persist immediately so the choice survives restart
+        from db.database import set_setting
+        set_setting("theme", value.lower())
+        # Rebuild the entire UI with the new palette, landing back on Settings
+        self._app.rebuild_ui(target_view="settings")
 
     def _activate(self):
         key = self._key_entry.get().strip()

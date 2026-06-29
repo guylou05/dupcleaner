@@ -1,6 +1,6 @@
 import tkinter as tk
 import customtkinter as ctk
-from utils.theme import COLORS, apply_theme, FONT_HEADING_LG, FONT_BODY, FONT_CAPTION
+from utils.theme import COLORS, apply_theme, set_theme, FONT_HEADING_LG, FONT_BODY, FONT_CAPTION
 from utils.constants import (
     APP_NAME, APP_VERSION, WINDOW_WIDTH, WINDOW_HEIGHT,
     MIN_WIDTH, MIN_HEIGHT, SIDEBAR_WIDTH, TITLEBAR_HEIGHT
@@ -19,6 +19,16 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         apply_theme()
+        # Apply user's saved theme preference now that DB is ready
+        saved = get_setting("theme", "dark")
+        if saved == "system":
+            try:
+                import darkdetect
+                saved = (darkdetect.theme() or "dark").lower()
+            except Exception:
+                saved = "dark"
+        if saved != "dark":
+            set_theme(saved)
         self._setup_window()
         self._build_titlebar()
         self._build_layout()
@@ -37,6 +47,7 @@ class App(ctk.CTk):
                             height=TITLEBAR_HEIGHT, corner_radius=0)
         bar.pack(fill="x", side="top")
         bar.pack_propagate(False)
+        self._titlebar = bar
 
         ctk.CTkLabel(
             bar, text=f"\U0001f9f9  {APP_NAME}",
@@ -52,6 +63,7 @@ class App(ctk.CTk):
     def _build_layout(self):
         container = ctk.CTkFrame(self, fg_color=COLORS["bg_primary"], corner_radius=0)
         container.pack(fill="both", expand=True)
+        self._container = container
 
         # Sidebar is created first; it calls navigate("scan") during __init__.
         # _views is not set yet at that point, so navigate() guards with hasattr.
@@ -73,6 +85,17 @@ class App(ctk.CTk):
         self._active_view: str | None = None
         # Now that _views exists, do the initial navigation.
         self.navigate("scan")
+
+    def rebuild_ui(self, target_view: str = "settings"):
+        """Destroy and rebuild the entire UI tree with the current COLORS palette."""
+        if hasattr(self, "_titlebar"):
+            self._titlebar.destroy()
+        if hasattr(self, "_container"):
+            self._container.destroy()
+        self.configure(fg_color=COLORS["bg_primary"])
+        self._build_titlebar()
+        self._build_layout()
+        self.navigate(target_view)
 
     def navigate(self, key: str):
         if not hasattr(self, '_views') or key not in self._views:
