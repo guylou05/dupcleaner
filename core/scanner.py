@@ -93,12 +93,14 @@ class DuplicateScanner:
             # Free tier: cap total data scanned at SCAN_FREE_LIMIT_GB.
             # Skip (don't stop on) oversized files so one large file early in
             # the walk order can't knock out every file that follows it.
+            cap_hit = False
             from core.license import is_pro as _is_pro
             if not _is_pro():
                 limit = SCAN_FREE_LIMIT_GB * 1024 ** 3
                 cumulative, capped = 0, []
                 for _path, _size in all_files:
                     if cumulative + _size > limit:
+                        cap_hit = True
                         continue
                     cumulative += _size
                     capped.append((_path, _size))
@@ -121,7 +123,7 @@ class DuplicateScanner:
             by_partial = defaultdict(list)
             for path in flat_candidates:
                 if self._cancel_event.is_set():
-                    complete_cb([], scanned, errors, cancelled=True)
+                    complete_cb([], scanned, errors, cancelled=True, cap_hit=False)
                     return
                 ph = partial_hash(path)
                 if ph is None:
@@ -139,7 +141,7 @@ class DuplicateScanner:
                     continue
                 for path in paths:
                     if self._cancel_event.is_set():
-                        complete_cb([], scanned, errors, cancelled=True)
+                        complete_cb([], scanned, errors, cancelled=True, cap_hit=False)
                         return
                     fh = full_hash(path)
                     if fh is None:
@@ -226,10 +228,10 @@ class DuplicateScanner:
             rule = get_setting("auto_select_rule", "newest")
             groups = _auto_select(groups, rule)
 
-            complete_cb(groups, scanned, errors, cancelled=False)
+            complete_cb(groups, scanned, errors, cancelled=False, cap_hit=cap_hit)
 
         except Exception as exc:
             if error_cb:
                 error_cb(exc)
             else:
-                complete_cb([], 0, [], cancelled=False)
+                complete_cb([], 0, [], cancelled=False, cap_hit=False)

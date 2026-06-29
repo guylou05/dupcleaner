@@ -277,16 +277,25 @@ class ScanView(ctk.CTkFrame):
             text=f"Files scanned: {scanned:,} of {total:,}  •  Duplicates found: {groups_found}"
         )
 
-    def _on_complete(self, groups, scanned, errors, cancelled):
-        self.after(0, lambda: self._finish(groups, scanned, errors, cancelled))
+    def _on_complete(self, groups, scanned, errors, cancelled, cap_hit=False):
+        self.after(0, lambda: self._finish(groups, scanned, errors, cancelled, cap_hit))
 
-    def _finish(self, groups, scanned, errors, cancelled):
+    def _finish(self, groups, scanned, errors, cancelled, cap_hit=False):
         self._scanning = False
         self._progress_frame.pack_forget()
         self._start_btn.pack()
         if cancelled:
             show_toast(self, "Scan cancelled.", "warning")
             return
+        if cap_hit:
+            from utils.constants import SCAN_FREE_LIMIT_GB
+            show_toast(
+                self,
+                f"Free plan: scan limited to {SCAN_FREE_LIMIT_GB} GB. "
+                "Upgrade to Pro to scan without limits.",
+                "warning",
+                duration_ms=6000,
+            )
         total_wasted = sum(g.wasted_bytes for g in groups)
         msg = f"Found {len(groups)} duplicate groups using {format_size(total_wasted)}"
         if errors:
