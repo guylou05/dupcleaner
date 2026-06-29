@@ -29,14 +29,9 @@ class Sidebar(ctk.CTkFrame):
         logo_frame = ctk.CTkFrame(self, fg_color="transparent")
         logo_frame.pack(fill="x", pady=(16, 8))
         ctk.CTkLabel(
-            logo_frame, text="\U0001f9f9 DupeClear",
+            logo_frame, text="\U0001f9f9 DupeClear Pro",
             font=("Segoe UI", 15, "bold"),
             text_color=COLORS["accent"]
-        ).pack(padx=16, anchor="w")
-        ctk.CTkLabel(
-            logo_frame, text="Pro",
-            font=("Segoe UI", 11),
-            text_color=COLORS["text_muted"]
         ).pack(padx=16, anchor="w")
 
         ctk.CTkFrame(self, fg_color=COLORS["border"], height=1).pack(fill="x", pady=8)

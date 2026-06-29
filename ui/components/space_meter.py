@@ -16,30 +16,25 @@ class SpaceMeter(ctk.CTkFrame):
         self._build()
 
     def _build(self):
+        inner = ctk.CTkFrame(self, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=14, pady=6)
+
         ctk.CTkLabel(
-            self, text="Potential Space Savings",
+            inner, text="Potential Space Savings",
             font=FONT_CAPTION, text_color=COLORS["text_secondary"]
-        ).pack(pady=(12, 2))
+        ).pack(anchor="e")
 
         self._value_label = ctk.CTkLabel(
-            self, text="0 B",
+            inner, text="0 B",
             font=FONT_HEADING_MD, text_color=COLORS["success"]
         )
-        self._value_label.pack()
-
-        self._bar = ctk.CTkProgressBar(
-            self, height=8,
-            fg_color=COLORS["bg_tertiary"],
-            progress_color=COLORS["success"]
-        )
-        self._bar.set(0)
-        self._bar.pack(fill="x", padx=16, pady=(6, 12))
+        self._value_label.pack(anchor="e")
 
     def set_value(self, bytes_saved: int, total_bytes: int = 0):
         self._target_bytes = bytes_saved
-        self._animate(total_bytes)
+        self._animate()
 
-    def _animate(self, total_bytes: int):
+    def _animate(self):
         if self._anim_id:
             try:
                 self.after_cancel(self._anim_id)
@@ -52,8 +47,6 @@ class SpaceMeter(ctk.CTkFrame):
             if self._current_bytes < self._target_bytes:
                 self._current_bytes = min(self._current_bytes + step, self._target_bytes)
                 self._value_label.configure(text=format_size(self._current_bytes))
-                if total_bytes > 0:
-                    self._bar.set(min(1.0, self._current_bytes / total_bytes))
                 self._anim_id = self.after(30, tick)
             else:
                 self._value_label.configure(text=format_size(self._target_bytes))
