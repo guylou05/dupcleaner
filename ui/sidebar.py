@@ -1,6 +1,7 @@
+import webbrowser
 import customtkinter as ctk
 from utils.theme import COLORS, FONT_BODY, FONT_BODY_BOLD, FONT_CAPTION
-from utils.constants import APP_VERSION, SIDEBAR_WIDTH
+from utils.constants import APP_VERSION, SIDEBAR_WIDTH, PRO_CHECKOUT_URL
 from core.license import is_pro
 
 NAV_ITEMS = [
@@ -56,6 +57,7 @@ class Sidebar(ctk.CTkFrame):
             font=FONT_CAPTION,
             text_color=COLORS["text_primary"]
         ).pack(pady=8)
+        self._bind_pro_badge_click()
 
         ctk.CTkLabel(
             self, text=f"v{APP_VERSION}",
@@ -102,3 +104,16 @@ class Sidebar(ctk.CTkFrame):
             font=FONT_CAPTION,
             text_color=COLORS["text_primary"]
         ).pack(pady=8)
+        self._bind_pro_badge_click()
+
+    def _bind_pro_badge_click(self):
+        """Clicking the badge opens the Pro checkout page, unless already Pro."""
+        widgets = [self._pro_badge, *self._pro_badge.winfo_children()]
+        if is_pro():
+            for w in widgets:
+                w.unbind("<Button-1>")
+                w.configure(cursor="arrow")
+        else:
+            for w in widgets:
+                w.bind("<Button-1>", lambda e: webbrowser.open(PRO_CHECKOUT_URL))
+                w.configure(cursor="hand2")

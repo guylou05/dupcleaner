@@ -3,7 +3,8 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog
 from utils.theme import COLORS, FONT_HEADING_LG, FONT_HEADING_MD, FONT_HEADING_SM, FONT_BODY, FONT_BODY_BOLD, FONT_CAPTION
-from utils.constants import CORNER_RADIUS, CARD_ROW_HEIGHT
+import webbrowser
+from utils.constants import CORNER_RADIUS, CARD_ROW_HEIGHT, PRO_CHECKOUT_URL
 from utils.file_utils import format_size, open_in_explorer
 from ui.components.toast import show_toast
 from ui.components.space_meter import SpaceMeter
@@ -223,7 +224,7 @@ class ResultsView(ctk.CTkFrame):
                 height=28,
                 fg_color=COLORS["accent"],
                 hover_color=COLORS["accent_hover"],
-                command=lambda: __import__("webbrowser").open("https://dupeclearpro.com/upgrade"),
+                command=lambda: webbrowser.open(PRO_CHECKOUT_URL),
             ).pack(side="right", padx=12, pady=10)
 
     def _render_group_card(self, idx: int, group):

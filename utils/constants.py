@@ -30,3 +30,5 @@ DEFAULT_EXCLUDE_FOLDERS = [
 
 SCAN_FREE_LIMIT_GB    = 1   # free tier: cap total scanned data at 1 GB
 FREE_RESULTS_LIMIT    = 10  # free tier: show only the top 10 duplicate groups
+
+PRO_CHECKOUT_URL = "https://esupplytech.lemonsqueezy.com/checkout/buy/5ea6c393-0377-46be-badc-bc64e2be1477?enabled=1852484"

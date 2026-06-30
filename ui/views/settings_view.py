@@ -3,7 +3,7 @@ import webbrowser
 import customtkinter as ctk
 from tkinter import filedialog
 from utils.theme import COLORS, FONT_HEADING_LG, FONT_HEADING_SM, FONT_BODY, FONT_CAPTION
-from utils.constants import APP_NAME, APP_VERSION, CORNER_RADIUS
+from utils.constants import APP_NAME, APP_VERSION, CORNER_RADIUS, PRO_CHECKOUT_URL
 from ui.components.toast import show_toast
 from db.database import get_setting, set_setting
 from core.license import is_pro, activate_license, deactivate_license
@@ -148,7 +148,7 @@ class SettingsView(ctk.CTkFrame):
             buy_row, text="Buy Pro — $24.99", height=36,
             fg_color=COLORS["warning"], hover_color="#b8860b",
             text_color="#000000", font=FONT_BODY_BOLD,
-            command=lambda: webbrowser.open("https://dupeclearpro.com/buy")
+            command=lambda: webbrowser.open(PRO_CHECKOUT_URL)
         ).pack(side="left")
 
         # Save

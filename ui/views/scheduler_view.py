@@ -1,7 +1,8 @@
 import json
+import webbrowser
 import customtkinter as ctk
 from utils.theme import COLORS, FONT_HEADING_LG, FONT_HEADING_SM, FONT_BODY, FONT_CAPTION
-from utils.constants import CORNER_RADIUS
+from utils.constants import CORNER_RADIUS, PRO_CHECKOUT_URL
 from ui.components.toast import show_toast
 from core.license import is_pro
 from core.scheduler import get_schedule_config, save_schedule_config, start_scheduler, stop_scheduler
@@ -37,7 +38,7 @@ class SchedulerView(ctk.CTkFrame):
                 scroll, text="Upgrade to Pro →", width=160,
                 fg_color=COLORS["warning"], hover_color="#b8860b",
                 text_color="#000000",
-                command=lambda: self._app.navigate("settings")
+                command=lambda: webbrowser.open(PRO_CHECKOUT_URL)
             ).pack(anchor="w")
             return
 
