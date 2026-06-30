@@ -21,18 +21,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Create placeholder icon
+      - name: Create placeholder icon if missing
         shell: python
         run: |
-          import os, struct, zlib
+          import os, struct
           os.makedirs('assets', exist_ok=True)
-          # Minimal valid 16x16 ICO so PyInstaller doesn't error
-          ico_header = struct.pack('<HHH', 0, 1, 1)
-          ico_entry  = struct.pack('<BBBBHHII', 16, 16, 0, 0, 1, 32, 40+16*16*4, 22)
-          bmp_header = struct.pack('<IiiHHIIiiII', 40, 16, -16, 1, 32, 0, 0, 0, 0, 0, 0)
-          pixels = b'\x10\x4f\xf7\xff' * (16*16)
-          with open('assets/icon.ico', 'wb') as f:
-              f.write(ico_header + ico_entry + bmp_header + pixels)
+          if os.path.exists('assets/icon.ico') and os.path.getsize('assets/icon.ico') > 0:
+              print('assets/icon.ico already present, skipping placeholder')
+          else:
+              # Minimal valid 16x16 ICO so PyInstaller doesn't error
+              ico_header = struct.pack('<HHH', 0, 1, 1)
+              ico_entry  = struct.pack('<BBBBHHII', 16, 16, 0, 0, 1, 32, 40+16*16*4, 22)
+              bmp_header = struct.pack('<IiiHHIIiiII', 40, 16, -16, 1, 32, 0, 0, 0, 0, 0, 0)
+              pixels = b'\x10\x4f\xf7\xff' * (16*16)
+              with open('assets/icon.ico', 'wb') as f:
+                  f.write(ico_header + ico_entry + bmp_header + pixels)
 
       - name: Build with PyInstaller
         run: |
@@ -75,8 +78,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Create placeholder assets
-        run: mkdir -p assets && touch assets/icon.ico
+      - name: Create placeholder icon if missing
+        run: mkdir -p assets && [ -s assets/icon.ico ] || touch assets/icon.ico
 
       - name: Build with PyInstaller
         run: |

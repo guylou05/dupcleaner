@@ -1,3 +1,5 @@
+import os
+import sys
 import tkinter as tk
 import customtkinter as ctk
 from utils.theme import COLORS, apply_theme, set_theme, FONT_HEADING_LG, FONT_BODY, FONT_CAPTION
@@ -41,6 +43,19 @@ class App(ctk.CTk):
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
         self.configure(fg_color=COLORS["bg_primary"])
+        self._set_window_icon()
+
+    def _set_window_icon(self):
+        base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+        try:
+            if sys.platform == "win32":
+                self.iconbitmap(os.path.join(base, "assets", "icon.ico"))
+            else:
+                icon_img = tk.PhotoImage(file=os.path.join(base, "assets", "icon_64.png"))
+                self.iconphoto(True, icon_img)
+                self._icon_image = icon_img  # keep a reference alive
+        except Exception:
+            pass
 
     def _build_titlebar(self):
         bar = ctk.CTkFrame(self, fg_color=COLORS["sidebar_bg"],
