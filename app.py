@@ -121,12 +121,13 @@ class App(ctk.CTk):
         # Free tier: only show top N groups; pass full count for the upgrade banner
         full_count = len(groups)
         if not is_pro() and full_count > FREE_RESULTS_LIMIT:
-            groups = groups[:FREE_RESULTS_LIMIT]
+            display_groups = groups[:FREE_RESULTS_LIMIT]
             capped_count = full_count
         else:
+            display_groups = groups
             capped_count = 0  # 0 = no cap applied
 
-        if scan_history_id and groups:
+        if scan_history_id:
             try:
                 def _fi_dict(fi):
                     return {
@@ -152,6 +153,7 @@ class App(ctk.CTk):
                 update_scan_history(
                     scan_history_id,
                     completed_at=datetime.now().isoformat(),
+                    files_scanned=total_files,
                     duplicate_groups=len(groups),
                     wasted_bytes=sum(g.wasted_bytes for g in groups),
                     results_json=json.dumps(raw),
@@ -159,6 +161,7 @@ class App(ctk.CTk):
             except Exception:
                 pass
 
+        groups = display_groups
         results_view: ResultsView = self._views["results"]
         results_view.load_results(groups, scan_history_id, capped_count=capped_count, total_files=total_files)
         self.navigate("results")

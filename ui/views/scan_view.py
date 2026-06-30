@@ -26,6 +26,7 @@ class ScanView(ctk.CTkFrame):
         self._scanner: DuplicateScanner | None = None
         self._scanning = False
         self._files_total = 0
+        self._scan_id = None
         self._build()
 
     def _build(self):
@@ -233,8 +234,10 @@ class ScanView(ctk.CTkFrame):
         if self._scanning:
             return
 
-        from db.database import set_setting
+        from datetime import datetime
+        from db.database import set_setting, insert_scan_history
         set_setting("first_run", "false")
+        self._scan_id = insert_scan_history(folders, datetime.now().isoformat())
 
         opts = self._build_options()
         self._scanner = DuplicateScanner(opts)
@@ -286,6 +289,14 @@ class ScanView(ctk.CTkFrame):
         self._start_btn.pack()
         if cancelled:
             show_toast(self, "Scan cancelled.", "warning")
+            if self._scan_id:
+                from datetime import datetime
+                from db.database import update_scan_history
+                update_scan_history(
+                    self._scan_id,
+                    completed_at=datetime.now().isoformat(),
+                    files_scanned=scanned,
+                )
             return
         total_wasted = sum(g.wasted_bytes for g in groups)
         if groups:
@@ -295,7 +306,7 @@ class ScanView(ctk.CTkFrame):
         if errors:
             msg += f"  •  {len(errors)} files inaccessible"
         show_toast(self, msg, "success" if groups else "info", duration_ms=5000)
-        self._app.show_results(groups, scan_history_id=None, total_files=total_files)
+        self._app.show_results(groups, scan_history_id=self._scan_id, total_files=total_files)
 
     def _on_error(self, exc):
         self.after(0, lambda: show_toast(self, f"Scan error: {exc}", "error"))
