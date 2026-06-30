@@ -1,4 +1,4 @@
-name = "dupeclear-license-issuer"
+name = "dupcleaner-license"
 main = "worker.js"
 compatibility_date = "2024-11-01"
 
