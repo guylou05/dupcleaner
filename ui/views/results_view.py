@@ -26,6 +26,8 @@ class ResultsView(ctk.CTkFrame):
         self._filtered = []
         self._scan_history_id = None
         self._capped_count = 0
+        self._total_files = 0
+        self._has_scanned = False
         self._build()
 
     def _build(self):
@@ -120,10 +122,12 @@ class ResultsView(ctk.CTkFrame):
         )
         self._empty_label.pack(pady=60)
 
-    def load_results(self, groups: list, scan_history_id: int = None, capped_count: int = 0):
+    def load_results(self, groups: list, scan_history_id: int = None, capped_count: int = 0, total_files: int = 0):
         self._groups = groups
         self._scan_history_id = scan_history_id
         self._capped_count = capped_count  # total groups before free-tier cap (0 = uncapped)
+        self._total_files = total_files
+        self._has_scanned = True
         self._apply_sort()
 
     def _apply_sort(self):
@@ -157,10 +161,23 @@ class ResultsView(ctk.CTkFrame):
             w.destroy()
 
         if not self._filtered:
+            if self._groups:
+                empty_text = "No results."
+            elif self._has_scanned:
+                if self._total_files == 0:
+                    empty_text = (
+                        "0 files matched your scan filters in the selected folder(s).\n"
+                        "Check the folder isn't empty and your file-type / size filters aren't too restrictive."
+                    )
+                else:
+                    empty_text = f"Scanned {self._total_files:,} files — no duplicates found."
+            else:
+                empty_text = "Run a scan to see duplicate files here."
             ctk.CTkLabel(
                 self._scroll,
-                text="No results." if self._groups else "Run a scan to see duplicate files here.",
-                font=FONT_BODY, text_color=COLORS["text_muted"]
+                text=empty_text,
+                font=FONT_BODY, text_color=COLORS["text_muted"],
+                justify="center"
             ).pack(pady=60)
 
             total_wasted = sum(g.wasted_bytes for g in self._groups)

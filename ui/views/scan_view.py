@@ -295,7 +295,7 @@ class ScanView(ctk.CTkFrame):
         if errors:
             msg += f"  •  {len(errors)} files inaccessible"
         show_toast(self, msg, "success" if groups else "info", duration_ms=5000)
-        self._app.show_results(groups, scanned)
+        self._app.show_results(groups, scan_history_id=None, total_files=total_files)
 
     def _on_error(self, exc):
         self.after(0, lambda: show_toast(self, f"Scan error: {exc}", "error"))

@@ -112,7 +112,7 @@ class App(ctk.CTk):
         if hasattr(self, "sidebar"):
             self.sidebar.set_active(key)
 
-    def show_results(self, groups: list, scan_history_id: int = None):
+    def show_results(self, groups: list, scan_history_id: int = None, total_files: int = 0):
         import json
         from datetime import datetime
         from core.license import is_pro
@@ -160,7 +160,7 @@ class App(ctk.CTk):
                 pass
 
         results_view: ResultsView = self._views["results"]
-        results_view.load_results(groups, scan_history_id, capped_count=capped_count)
+        results_view.load_results(groups, scan_history_id, capped_count=capped_count, total_files=total_files)
         self.navigate("results")
 
     def _show_first_run_if_needed(self):
