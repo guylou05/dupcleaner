@@ -13,7 +13,7 @@ CORNER_RADIUS   = 8
 THUMB_SIZE      = 72
 CARD_ROW_HEIGHT = 120
 
-SCAN_BATCH_SIZE = 100   # files per progress update tick
+SCAN_BATCH_SIZE = 20    # files per progress update tick
 
 PARTIAL_HASH_BYTES = 65536  # 64 KB for fast pre-filter
 

@@ -108,7 +108,7 @@ class DuplicateScanner:
             by_partial = defaultdict(list)
             for path in flat_candidates:
                 if self._cancel_event.is_set():
-                    complete_cb([], scanned, errors, cancelled=True, cap_hit=False)
+                    complete_cb([], scanned, errors, cancelled=True, cap_hit=False, total_files=total)
                     return
                 ph = partial_hash(path)
                 if ph is None:
@@ -213,10 +213,10 @@ class DuplicateScanner:
             rule = get_setting("auto_select_rule", "newest")
             groups = _auto_select(groups, rule)
 
-            complete_cb(groups, scanned, errors, cancelled=False, cap_hit=cap_hit)
+            complete_cb(groups, scanned, errors, cancelled=False, cap_hit=cap_hit, total_files=total)
 
         except Exception as exc:
             if error_cb:
                 error_cb(exc)
             else:
-                complete_cb([], 0, [], cancelled=False, cap_hit=False)
+                complete_cb([], 0, [], cancelled=False, cap_hit=False, total_files=0)

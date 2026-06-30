@@ -277,10 +277,10 @@ class ScanView(ctk.CTkFrame):
             text=f"Files scanned: {scanned:,} of {total:,}  •  Duplicates found: {groups_found}"
         )
 
-    def _on_complete(self, groups, scanned, errors, cancelled, cap_hit=False):
-        self.after(0, lambda: self._finish(groups, scanned, errors, cancelled, cap_hit))
+    def _on_complete(self, groups, scanned, errors, cancelled, cap_hit=False, total_files=0):
+        self.after(0, lambda: self._finish(groups, scanned, errors, cancelled, total_files))
 
-    def _finish(self, groups, scanned, errors, cancelled, cap_hit=False):
+    def _finish(self, groups, scanned, errors, cancelled, total_files=0):
         self._scanning = False
         self._progress_frame.pack_forget()
         self._start_btn.pack()
@@ -288,10 +288,13 @@ class ScanView(ctk.CTkFrame):
             show_toast(self, "Scan cancelled.", "warning")
             return
         total_wasted = sum(g.wasted_bytes for g in groups)
-        msg = f"Found {len(groups)} duplicate groups using {format_size(total_wasted)}"
+        if groups:
+            msg = f"Found {len(groups)} duplicate groups — {format_size(total_wasted)} recoverable"
+        else:
+            msg = f"No duplicates found  ({total_files:,} files scanned)"
         if errors:
-            msg += f"  ({len(errors)} files inaccessible)"
-        show_toast(self, msg, "success" if groups else "info")
+            msg += f"  •  {len(errors)} files inaccessible"
+        show_toast(self, msg, "success" if groups else "info", duration_ms=5000)
         self._app.show_results(groups, scanned)
 
     def _on_error(self, exc):
