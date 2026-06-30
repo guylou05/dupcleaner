@@ -69,7 +69,8 @@ def main():
     try:
         init_db()
     except Exception as e:
-        print(f"DB init error: {e}", file=sys.stderr)
+        if sys.stderr is not None:
+            print(f"DB init error: {e}", file=sys.stderr)
 
     # Keep splash visible for at least 1.8s
     splash.after(1800, lambda: None)

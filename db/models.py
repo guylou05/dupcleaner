@@ -6,7 +6,7 @@ from datetime import datetime
 class ScanOptions:
     folders: list
     include_hidden: bool       = False
-    min_file_size_kb: int      = 1
+    min_file_size_kb: int      = 0
     max_file_size_mb: int      = 0
     file_type_filter: list     = field(default_factory=list)
     exclude_folders: list      = field(default_factory=list)
@@ -31,7 +31,7 @@ class ScanOptions:
         return cls(
             folders=folders,
             include_hidden=d.get("include_hidden", False),
-            min_file_size_kb=d.get("min_file_size_kb", 1),
+            min_file_size_kb=d.get("min_file_size_kb", 0),
             max_file_size_mb=d.get("max_file_size_mb", 0),
             file_type_filter=d.get("file_type_filter", []),
             exclude_folders=d.get("exclude_folders", []),

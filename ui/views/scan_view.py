@@ -78,9 +78,9 @@ class ScanView(ctk.CTkFrame):
         ctk.CTkLabel(row2, text="Min File Size:", font=FONT_BODY,
                      text_color=COLORS["text_secondary"], width=120, anchor="w"
                      ).pack(side="left")
-        self._min_size_var = ctk.StringVar(value="1 KB")
+        self._min_size_var = ctk.StringVar(value="No Minimum")
         ctk.CTkOptionMenu(
-            row2, values=["1 KB", "10 KB", "100 KB", "1 MB", "10 MB"],
+            row2, values=["No Minimum", "1 KB", "10 KB", "100 KB", "1 MB", "10 MB"],
             variable=self._min_size_var,
             fg_color=COLORS["bg_tertiary"],
             button_color=COLORS["accent"],
@@ -211,8 +211,8 @@ class ScanView(ctk.CTkFrame):
         show_toast(self, f'Profile "{name}" deleted.', "info")
 
     def _build_options(self) -> ScanOptions:
-        min_map = {"1 KB": 1, "10 KB": 10, "100 KB": 100, "1 MB": 1024, "10 MB": 10240}
-        min_kb  = min_map.get(self._min_size_var.get(), 1)
+        min_map = {"No Minimum": 0, "1 KB": 1, "10 KB": 10, "100 KB": 100, "1 MB": 1024, "10 MB": 10240}
+        min_kb  = min_map.get(self._min_size_var.get(), 0)
         folders = self._folder_picker.get_folders()
         import json as _json
         exclude = _json.loads(get_setting("excluded_folders", "[]"))
