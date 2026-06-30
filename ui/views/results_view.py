@@ -30,9 +30,8 @@ class ResultsView(ctk.CTkFrame):
 
     def _build(self):
         # Top summary bar
-        top = ctk.CTkFrame(self, fg_color=COLORS["bg_secondary"], corner_radius=0, height=64)
+        top = ctk.CTkFrame(self, fg_color=COLORS["bg_secondary"], corner_radius=0)
         top.pack(fill="x")
-        top.pack_propagate(False)
 
         self._summary_label = ctk.CTkLabel(
             top, text="No scan results yet.",
