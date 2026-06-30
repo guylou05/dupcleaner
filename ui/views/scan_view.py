@@ -287,15 +287,6 @@ class ScanView(ctk.CTkFrame):
         if cancelled:
             show_toast(self, "Scan cancelled.", "warning")
             return
-        if cap_hit:
-            from utils.constants import SCAN_FREE_LIMIT_GB
-            show_toast(
-                self,
-                f"Free plan: scan limited to {SCAN_FREE_LIMIT_GB} GB. "
-                "Upgrade to Pro to scan without limits.",
-                "warning",
-                duration_ms=6000,
-            )
         total_wasted = sum(g.wasted_bytes for g in groups)
         msg = f"Found {len(groups)} duplicate groups using {format_size(total_wasted)}"
         if errors:
