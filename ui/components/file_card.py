@@ -102,15 +102,15 @@ class FileCard(ctk.CTkFrame):
                 font=FONT_CAPTION, text_color=COLORS["success"]
             ).pack(side="left", padx=8)
 
-        # checkbox column
-        if not self._fi.is_recommended_keep:
-            ctk.CTkCheckBox(
-                self, text="", variable=self._var,
-                width=24, height=24,
-                fg_color=COLORS["accent"],
-                hover_color=COLORS["accent_hover"],
-                command=self._toggled
-            ).pack(side="right", padx=12)
+        # checkbox column — always shown, including on the recommended-keep
+        # file, so the user can override which copy gets deleted.
+        ctk.CTkCheckBox(
+            self, text="", variable=self._var,
+            width=24, height=24,
+            fg_color=COLORS["accent"],
+            hover_color=COLORS["accent_hover"],
+            command=self._toggled
+        ).pack(side="right", padx=12)
 
     def _icon_label(self, parent):
         icon = _ICON_MAP.get(self._fi.extension, "\U0001f4c4")

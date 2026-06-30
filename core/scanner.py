@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 from datetime import datetime
 from collections import defaultdict
@@ -34,18 +35,34 @@ def _make_thumbnail(path: str, size: int = 72) -> bytes | None:
         return None
 
 
+_COPY_NAME_PATTERNS = [
+    re.compile(r"^copy(\s*\(\d+\))?\s+of\s+", re.IGNORECASE),  # "Copy of x", "Copy (2) of x"
+    re.compile(r"[\s_-]+copy(\s*\d+)?$", re.IGNORECASE),       # "x - Copy", "x copy 2", "x_copy"
+    re.compile(r"\s*\(\d+\)$"),                                # "x (1)"
+]
+
+
+def _looks_like_copy(filename: str) -> bool:
+    """True if the filename has a 'this is a duplicate' marker, e.g. 'photo - Copy.png', 'photo (1).png'."""
+    stem = os.path.splitext(filename)[0].strip()
+    return any(p.search(stem) for p in _COPY_NAME_PATTERNS)
+
+
 def _auto_select(groups: list, rule: str = "newest") -> list:
     for group in groups:
         files = group.files
+        originals = [f for f in files if not _looks_like_copy(f.name)]
+        candidates = originals if originals else files
+
         if rule == "newest":
-            keep = max(files, key=lambda f: f.modified_at)
+            keep = max(candidates, key=lambda f: f.modified_at)
         elif rule == "shortest_path":
-            keep = min(files, key=lambda f: len(f.path))
+            keep = min(candidates, key=lambda f: len(f.path))
         elif rule == "primary_drive":
-            c_files = [f for f in files if f.path.lower().startswith("c:\\")]
-            keep = c_files[0] if c_files else files[0]
+            c_files = [f for f in candidates if f.path.lower().startswith("c:\\")]
+            keep = c_files[0] if c_files else candidates[0]
         else:
-            keep = max(files, key=lambda f: f.modified_at)
+            keep = max(candidates, key=lambda f: f.modified_at)
 
         for f in files:
             f.is_recommended_keep = (f is keep)
