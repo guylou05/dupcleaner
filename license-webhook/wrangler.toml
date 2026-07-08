@@ -1,0 +1,16 @@
+name = "dupcleaner-license"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+kv_namespaces = [
+  { binding = "LICENSES", id = "7fdce4b6b46c41209b9128920694cc7c" }
+]
+
+[vars]
+GUMROAD_PERMALINK = "REPLACE_WITH_YOUR_PRODUCT_PERMALINK"
+SENDER_EMAIL = "REPLACE_WITH_VERIFIED_SENDER_EMAIL"
+
+# Secrets (set with `wrangler secret put NAME`, never put these here):
+#   LICENSE_SECRET
+#   WEBHOOK_TOKEN
+#   RESEND_API_KEY
